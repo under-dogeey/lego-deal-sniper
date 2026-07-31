@@ -19,7 +19,7 @@ class LegoSet(Base):
         ),
     )
 
-    set_id: Mapped[int] = mapped_column(primary_key=True)
+    set_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False)
     number: Mapped[str]
     number_variant: Mapped[int]
     name: Mapped[str]
