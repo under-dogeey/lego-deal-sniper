@@ -19,6 +19,9 @@ class LegoSet(Base):
         ),
     )
 
+    def __repr__(self) -> str:
+        return f"LegoSet(set_id={self.set_id!r}, number={self.number!r}, name={self.name!r})"
+
     set_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=False)
     number: Mapped[str]
     number_variant: Mapped[int]
