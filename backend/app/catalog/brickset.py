@@ -1,5 +1,6 @@
 import httpx
 import json
+import math
 from app.core.config import settings
 
 class BricksetError(Exception):
@@ -20,28 +21,23 @@ class BricksetClient:
             "theme": theme
         }
 
-        params = {k: v for k, v in params.items() if v is not None}
 
         return self._request("getYears", params=params)
 
-    def get_sets(self, theme=None, year=None, updated_since=None, page_number=1, page_size=500):
+    def get_sets(self, theme=None, year=None, updated_since=None, page_size=500):
 
-        search = {
-            "theme": theme,
-            "year": year,
-            "updatedSince": updated_since,
-            "pageNumber": page_number,
-            "pageSize": page_size,
-            }
+        first = self._fetch_page(1, theme=theme, year=year, updated_since=updated_since, page_size=page_size)
 
-        params = {
-            "userHash": "",
-            "params": json.dumps(search)
-        }
+        all_sets = list(first["sets"])
 
-        params = {k: v for k, v in params.items() if v is not None}
+        pages = math.ceil(first["matches"] / page_size)
 
-        return self._request("getSets", params=params)
+        for page in range(2, pages + 1):
+
+            all_sets.extend(self._fetch_page(page, theme=theme, year=year, updated_since=updated_since, page_size=page_size)["sets"]) 
+
+
+        return all_sets
     
     def _request(self, brickset_function, params=None):
 
@@ -57,8 +53,26 @@ class BricksetClient:
             raise BricksetError(data["message"])
         
         
-        
         return data
+    
+    def _fetch_page(self, page_number, theme=None, year=None, updated_since=None, page_size=500):
+        search = {
+            "theme": theme,
+            "year": year,
+            "updatedSince": updated_since,
+            "pageNumber": page_number,
+            "pageSize": page_size,
+            }
+        
+        search = {k: v for k, v in search.items() if v is not None}
+
+        params = {
+            "userHash": "",
+            "params": json.dumps(search)
+
+        }
+
+        return self._request("getSets", params=params)
     
     def close(self):
         

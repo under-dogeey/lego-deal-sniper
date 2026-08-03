@@ -10,21 +10,25 @@ def to_dict(obj):
 def fill_lego_sets():
 
     client = BricksetClient()
-    sets = client.get_sets(year="1995")
-    objs = [to_lego_set(s) for s in sets["sets"]]
+    years = client.get_years()["years"]
+    for y in years:
+        sets = client.get_sets(year=y["year"])
+        objs = [to_lego_set(s) for s in sets]
 
-    rows = [to_dict(o) for o in objs]
+        rows = [to_dict(o) for o in objs]
 
-    stmt = insert(LegoSet).values(rows)
+        stmt = insert(LegoSet).values(rows)
 
-    upsert_stmt = stmt.on_conflict_do_update(index_elements=["set_id"], set_=dict({c.name: stmt.excluded[c.name] for c in LegoSet.__table__.columns if c.name != "set_id"}))
+        upsert_stmt = stmt.on_conflict_do_update(index_elements=["set_id"], set_=dict({c.name: stmt.excluded[c.name] for c in LegoSet.__table__.columns if c.name != "set_id"}))
 
-
-    with session_factory() as session:
-        session.execute(upsert_stmt)
-        session.commit()
+        with session_factory() as session:
+            session.execute(upsert_stmt)
+            session.commit()
+        
+        print(y["year"], len(rows))
         
     print(f"upserted {len(rows)} rows")
+
 
     client.close()
 
