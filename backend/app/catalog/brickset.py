@@ -13,15 +13,30 @@ class BricksetClient:
             
     def get_themes(self):
         return self._request("getThemes")
+    
+    def get_years(self, theme=""):
+
+        params = {
+            "theme": theme
+        }
+
+        params = {k: v for k, v in params.items() if v is not None}
+
+        return self._request("getYears", params=params)
 
     def get_sets(self, theme=None, year=None, updated_since=None, page_number=1, page_size=500):
 
-        params = {
+        search = {
             "theme": theme,
             "year": year,
             "updatedSince": updated_since,
             "pageNumber": page_number,
-            "pageSize": page_size
+            "pageSize": page_size,
+            }
+
+        params = {
+            "userHash": "",
+            "params": json.dumps(search)
         }
 
         params = {k: v for k, v in params.items() if v is not None}
@@ -29,14 +44,19 @@ class BricksetClient:
         return self._request("getSets", params=params)
     
     def _request(self, brickset_function, params=None):
-        response = self._client.get(f"https://brickset.com/api/v3.asmx/{brickset_function}", params = {"apiKey": self.api_key,
-         "userHash": "",
-         "params": json.dumps(params or {})})
+
+        query = {"apiKey": self.api_key}   
+        if params:
+            query.update(params)     
+
+        response = self._client.get(f"https://brickset.com/api/v3.asmx/{brickset_function}", params = query)
 
         data = response.json()
 
         if data["status"] == 'error':
             raise BricksetError(data["message"])
+        
+        
         
         return data
     
