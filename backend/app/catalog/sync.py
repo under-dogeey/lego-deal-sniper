@@ -4,42 +4,29 @@ from app.catalog.transform import to_lego_set
 from app.db.models import LegoSet
 from sqlalchemy.dialects.postgresql import insert
 
-#def fill_lego_sets():
+def to_dict(obj):
+    return {c.name: getattr(obj, c.name) for c in LegoSet.__table__.columns}
 
-    #client = BricksetClient()
+def fill_lego_sets():
 
-    #for set in sets:
-        #set = to_lego_set(client.get_sets(year="1995"))
-    
-    #page_size = 500
-    #years = client.get_years()
-
-    #for year in years:
-    #    sets = client.get_sets(year=year)
-    #    rows = [dict(to_lego_set(s)) for s in sets["sets"]]
-
-        
-    #    for set in sets:
-    
-    #        statement = insert(LegoSet).values(set)
-
-    #        upsert_statement = statement.on_conflict_do_update(#i dont even know anymore)
-    #        with session_factory as session:
-    #            session.execute(upsert_statement)
-    #            session.commit()
-
-if __name__ == "__main__":
     client = BricksetClient()
     sets = client.get_sets(year="1995")
     objs = [to_lego_set(s) for s in sets["sets"]]
-    print(len(objs))
-    
-    print(objs[0])
-    print(objs[85])
-    print(objs[-1])
 
-    for o in objs:
-        if not o.number.isdigit():
-            print(o)
-    #print(sets["matches"], len(sets["sets"]))
-    #print(sets["sets"][0])
+    rows = [to_dict(o) for o in objs]
+
+    stmt = insert(LegoSet).values(rows)
+
+    upsert_stmt = stmt.on_conflict_do_update(index_elements=["set_id"], set_=dict({c.name: stmt.excluded[c.name] for c in LegoSet.__table__.columns if c.name != "set_id"}))
+
+
+    with session_factory() as session:
+        session.execute(upsert_stmt)
+        session.commit()
+        
+    print(f"upserted {len(rows)} rows")
+
+    client.close()
+
+if __name__ == "__main__":
+    fill_lego_sets()
