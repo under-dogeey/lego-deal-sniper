@@ -43,13 +43,14 @@ def fill_lego_sets(incremental=False):
         
     else:
         years = client.get_years()["years"]
+        total = 0
         for y in years:
             sets = client.get_sets(year=y["year"])
             count = _upsert_sets(sets)
-
+            total += count
             print(y["year"], count)
         
-    #print(f"upserted {len(rows)} rows")
+    print(f"upserted {total} rows")
 
 
     client.close()
