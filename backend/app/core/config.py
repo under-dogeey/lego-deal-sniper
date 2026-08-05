@@ -5,6 +5,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env")
 
     brickset_api_key: str
+    ebay_client_id: str
+    ebay_client_secret: str
     database_url: str
 
 
