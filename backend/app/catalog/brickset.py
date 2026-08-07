@@ -52,7 +52,6 @@ class BricksetClient:
         if data["status"] == 'error':
             raise BricksetError(data["message"])
         
-        
         return data
     
     def _fetch_page(self, page_number, theme=None, year=None, updated_since=None, page_size=500):

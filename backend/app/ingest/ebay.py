@@ -3,6 +3,7 @@ from app.core.config import settings
 from datetime import datetime, timedelta, timezone
 
 TOKEN_EXPIRY_MARGIN_SECONDS = 60
+FILTER_DEFAULT = "buyingOptions:{AUCTION|FIXED_PRICE|BEST_OFFER}"
 
 
 class EbayError(Exception):
@@ -43,6 +44,16 @@ class EbayClient:
             )
 
             return self.token
+        
+    def search(self, query, filter=FILTER_DEFAULT, limit=200):
+    
+        params = {
+            "q": query,
+            "filter": filter,
+            "limit": limit,
+        }
+    
+        return self._request(params=params)
 
     def _request(self, allow_retry=True, params=None):
 
