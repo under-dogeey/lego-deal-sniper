@@ -2,8 +2,9 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import DateTime, UniqueConstraint
+from sqlalchemy import DateTime, UniqueConstraint, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 
 
 class Base(DeclarativeBase):
@@ -47,3 +48,44 @@ class LegoSet(Base):
     barcode_ean: Mapped[Optional[str]]
     barcode_upc: Mapped[Optional[str]]
     last_updated: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+class RawListing(Base):
+    __tablename__ = "raw_listings"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "source", "source_listing_id", name="uq_raw_listings_source_listing_id"
+        ),
+    )
+
+    def __repr__(self) -> str:
+        return f"RawListing(source_listing_id={self.source_listing_id!r}, title={self.title[0:40]!r}, price={self.price!r})"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source: Mapped[str]
+    source_listing_id: Mapped[str]
+    title: Mapped[str]
+    price: Mapped[Optional[Decimal]]
+    currency: Mapped[Optional[str]]
+    shipping_cost: Mapped[Optional[Decimal]]
+    condition: Mapped[str]
+    condition_id: Mapped[Optional[str]]
+    buying_options: Mapped[list[str]] = mapped_column(ARRAY(String))
+    epid: Mapped[Optional[str]]
+    leaf_category_id: Mapped[str]
+    item_web_url: Mapped[str]
+    image_urls: Mapped[list[str]] = mapped_column(ARRAY(String))
+    seller_feedback_score: Mapped[Optional[int]]
+    seller_feedback_percentage: Mapped[Optional[Decimal]]
+    item_creation_date: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    item_origin_date: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    bid_count: Mapped[Optional[int]]
+    current_bid_price: Mapped[Optional[Decimal]]
+    item_end_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    is_pickup_only: Mapped[bool]
+    distance_miles: Mapped[Optional[int]]
+    first_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    last_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    ended_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    alerted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    raw_json: Mapped[dict] = mapped_column(JSONB)
