@@ -39,33 +39,3 @@ def to_lego_set(data: dict) -> LegoSet:
         last_updated = datetime.fromisoformat(data["lastUpdated"])
     )
 
-#if __name__ == "__main__":
-#    sample = {
-#    "setID": 583,
-#    "number": "1785",
-#    "numberVariant": 1,
-#    "name": "Crater Critters",
-#    "year": 1995,
-#    "theme": "Space",
-#    "themeGroup": "Action/Adventure",
-#    "subtheme": "Miscellaneous",
-#    "category": "Normal",
-#    "released": True,
-#    "pieces": 143,
-#    "image": {
-#        "thumbnailURL": "https://images.brickset.com/sets/small/1785-1.jpg",
-#        "imageURL": "https://images.brickset.com/sets/images/1785-1.jpg",
-#    },
-#    "collections": {"ownedBy": 716, "wantedBy": 380},
-#    "LEGOCom": {"US": {}, "UK": {}, "CA": {}, "DE": {}},
-#    "rating": 3.0,
-#    "ratingCount": 17,
-#    "ageRange": {},
-#    "dimensions": {},
-#    "barcode": {},
-#    "lastUpdated": "2019-04-06T08:06:21.02Z",
-#}
-#    result = to_lego_set(sample)
-#    print(result.set_id, result.name, result.exit_date, result.retail_price_us)
-#    print(type(result.exit_date), type(result.last_updated), type(result.number))
-
