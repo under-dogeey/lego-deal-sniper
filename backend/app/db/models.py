@@ -2,7 +2,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import DateTime, UniqueConstraint, String
+from sqlalchemy import DateTime, UniqueConstraint, String, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 
@@ -89,3 +89,14 @@ class RawListing(Base):
     ended_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     alerted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     raw_json: Mapped[dict] = mapped_column(JSONB)
+
+class RawListingPriceHistory(Base):
+    __tablename__ = "raw_listings_price_history"
+
+    def __repr__(self) -> str:
+        return f"RawListingPriceHistory(listing_id={self.listing_id!r}, price={self.price!r}, observed_at={self.observed_at!r})"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    listing_id: Mapped[int] = mapped_column(ForeignKey("raw_listings.id"), index=True)
+    price: Mapped[Optional[Decimal]]
+    observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
