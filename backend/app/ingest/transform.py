@@ -1,5 +1,6 @@
 from app.db.models import RawListing
 from datetime import datetime, timezone
+from decimal import Decimal
 import copy
 
 def to_datetime(value):
@@ -7,6 +8,18 @@ def to_datetime(value):
         return None
 
     return datetime.fromisoformat(value)
+
+def to_decimal(value):
+    if value is None:
+        return None
+
+    return Decimal(value)
+
+def to_int(value):
+    if value is None:
+        return None
+
+    return int(value)
 
 def loop_images(data):
     
@@ -38,9 +51,9 @@ def to_raw_listing(data: dict) -> RawListing:
         source = 'ebay',
         source_listing_id = data["itemId"],
         title = data["title"],
-        price = data.get("price", {}).get("value"),
+        price = to_decimal(data.get("price", {}).get("value")),
         currency = data.get("price", {}).get("currency"),
-        shipping_cost = shipping_cost,
+        shipping_cost = to_decimal(shipping_cost),
         condition = data["condition"],
         condition_id = data.get("conditionId"),
         buying_options = data["buyingOptions"],
@@ -49,14 +62,14 @@ def to_raw_listing(data: dict) -> RawListing:
         item_web_url = data["itemWebUrl"],
         image_urls = image_urls,
         seller_feedback_score = data["seller"].get("feedbackScore"),
-        seller_feedback_percentage = data["seller"].get("feedbackPercentage"),
+        seller_feedback_percentage = to_decimal(data["seller"].get("feedbackPercentage")),
         item_creation_date = to_datetime(data["itemCreationDate"]),
         item_origin_date = to_datetime(data["itemOriginDate"]),
         bid_count = data.get("bidCount"),
-        current_bid_price = data.get("currentBidPrice", {}).get("value"),
+        current_bid_price = to_decimal(data.get("currentBidPrice", {}).get("value")),
         item_end_date = to_datetime(data.get("itemEndDate")),
         is_pickup_only = "shippingOptions" not in data,
-        distance_miles = data.get("distanceFromPickupLocation", {}).get("value"),
+        distance_miles = to_int(data.get("distanceFromPickupLocation", {}).get("value")),
         first_seen = now,
         last_seen = now,
         ended_at = None,
