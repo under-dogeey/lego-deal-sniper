@@ -1,6 +1,8 @@
 from app.db.sessions import session_factory
 from app.db.models import RawListing
 from app.ingest.transform import to_raw_listing
+
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
 PRESERVE_ON_CONFLICT = {"id", "first_seen", "alerted_at", "ended_at", "distance_miles"}
@@ -24,6 +26,21 @@ def upsert_listings(listings):
         session.commit()
 
     return len(rows)
+
+def fetch_existing_rows(listings, session):
+
+    ids = []
+    for listing in listings:
+        ids.append(listing.source_listing_id)
+
+    rows = session.execute(select(RawListing.id, RawListing.source_listing_id, RawListing.price).where(RawListing.source == "ebay", RawListing.source_listing_id.in_(ids))).all()
+
+    rows_dict = {}
+
+    for row in rows:
+        rows_dict[row.source_listing_id] = (row.id, row.price)
+
+    return rows_dict
 
 def fill_raw_listings(ebay_client, query_strings):
 
