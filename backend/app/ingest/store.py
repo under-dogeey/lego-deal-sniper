@@ -13,18 +13,23 @@ def to_dict(obj):
 def upsert_listings(listings, session):
 
     if not listings:
-        return 0
+        return {}
 
     rows = [to_dict(listing) for listing in listings]
 
     stmt = insert(RawListing).values(rows)
     upsert_stmt = stmt.on_conflict_do_update(index_elements=["source", "source_listing_id"], set_=
-        {c.name: stmt.excluded[c.name] for c in RawListing.__table__.columns if c.name not in PRESERVE_ON_CONFLICT}).returning(RawListing.id, RawListing.source_listing_id).all()
+        {c.name: stmt.excluded[c.name] for c in RawListing.__table__.columns if c.name not in PRESERVE_ON_CONFLICT}).returning(RawListing.id, RawListing.source_listing_id)
 
 
-    session.execute(upsert_stmt)
+    returned_rows = session.execute(upsert_stmt).all()
 
-    return rows
+    ids_by_source_id = {}
+
+    for row in returned_rows:
+        ids_by_source_id[row.source_listing_id] = row.id
+
+    return ids_by_source_id
 
 def fetch_existing_rows(listings, session):
 
@@ -61,6 +66,7 @@ def fill_raw_listings(ebay_client, query_strings):
     print(f"upserted {total} rows")
 
 def write_history():
+    pass
 
 
 def store_listings(listings, session):
