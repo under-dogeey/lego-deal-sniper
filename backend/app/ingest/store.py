@@ -10,7 +10,7 @@ PRESERVE_ON_CONFLICT = {"id", "first_seen", "alerted_at", "ended_at", "distance_
 def to_dict(obj):
     return {c.name: getattr(obj, c.name) for c in RawListing.__table__.columns if c.name != "id"}
 
-def upsert_listings(listings):
+def upsert_listings(listings, session):
 
     if not listings:
         return 0
@@ -19,13 +19,12 @@ def upsert_listings(listings):
 
     stmt = insert(RawListing).values(rows)
     upsert_stmt = stmt.on_conflict_do_update(index_elements=["source", "source_listing_id"], set_=
-        {c.name: stmt.excluded[c.name] for c in RawListing.__table__.columns if c.name not in PRESERVE_ON_CONFLICT})
+        {c.name: stmt.excluded[c.name] for c in RawListing.__table__.columns if c.name not in PRESERVE_ON_CONFLICT}).returning(RawListing.id, RawListing.source_listing_id).all()
 
-    with session_factory() as session:
-        session.execute(upsert_stmt)
-        session.commit()
 
-    return len(rows)
+    session.execute(upsert_stmt)
+
+    return rows
 
 def fetch_existing_rows(listings, session):
 
@@ -57,7 +56,32 @@ def fill_raw_listings(ebay_client, query_strings):
                 continue
             
             count = upsert_listings(listings)
-            total += count
+            total += len(count)
     
     print(f"upserted {total} rows")
+
+def write_history():
+
+
+def store_listings(listings, session):
     
+    existing_listings = fetch_existing_rows(listings, session)
+
+    ids = upsert_listings(listings, session)
+
+    new_listings = []
+    changed_listings = []
+    unchanged_listings = []
+
+    for listing in listings:
+        existing_listing = existing_listings.get(listing.source_listing_id)
+        if existing_listing is None:
+            new_listings.append(listing)
+        else: 
+            stored_id, stored_price = existing_listing
+            if stored_price == listing.price:
+                unchanged_listings.append(listing)
+            else:
+                changed_listings.append(listing)
+
+    write_history()
