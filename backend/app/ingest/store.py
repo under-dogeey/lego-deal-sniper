@@ -1,6 +1,7 @@
 from app.db.sessions import session_factory
-from app.db.models import RawListing
+from app.db.models import RawListing, RawListingPriceHistory
 from app.ingest.transform import to_raw_listing
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
@@ -48,7 +49,7 @@ def fetch_existing_rows(listings, session):
 
 def fill_raw_listings(ebay_client, query_strings):
 
-    total = 0
+    total_new = total_unchanged = total_changed = 0
 
     for queries in query_strings.values():
         for query in queries:
@@ -56,17 +57,41 @@ def fill_raw_listings(ebay_client, query_strings):
             summaries = ebay_client.search(query).get("itemSummaries", [])
 
             listings = [to_raw_listing(s) for s in summaries]
-            
+                
             if not listings:
                 continue
-            
-            count = upsert_listings(listings)
-            total += len(count)
-    
-    print(f"upserted {total} rows")
 
-def write_history():
-    pass
+            with session_factory() as session:
+
+                new, unchanged, changed =  store_listings(listings, session)
+                
+                total_new += new
+                total_unchanged += unchanged
+                total_changed += changed
+                
+                session.commit()
+    
+    print(f"{total_new} new, {total_unchanged} unchanged, {total_changed} changed")
+
+def write_history(listings, ids, observed_at, session):
+
+    if not listings:
+        return 0
+
+    history_rows = []
+
+    for listing in listings:
+        history_row = {
+            "listing_id": ids[listing.source_listing_id],
+            "price": listing.price,
+            "observed_at": observed_at
+        }
+        history_rows.append(history_row)
+
+    stmt = insert(RawListingPriceHistory).values(history_rows)
+    session.execute(stmt)
+
+    return len(history_rows)
 
 
 def store_listings(listings, session):
@@ -90,4 +115,8 @@ def store_listings(listings, session):
             else:
                 changed_listings.append(listing)
 
-    write_history()
+    listings_to_record = new_listings + changed_listings
+    now =  datetime.now(timezone.utc)
+    write_history( listings_to_record, ids, now, session)
+
+    return (len(new_listings), len(unchanged_listings), len(changed_listings))
