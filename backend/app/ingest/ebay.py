@@ -5,11 +5,22 @@ from datetime import datetime, timedelta, timezone
 TOKEN_EXPIRY_MARGIN_SECONDS = 60
 FILTER_DEFAULT = "buyingOptions:{AUCTION|FIXED_PRICE|BEST_OFFER}"
 SORT_DEFAULT = "newlyListed"
-
+CAP = 5000
 
 class EbayError(Exception):
     pass
 
+def next_quota_reset(now):
+
+    current_reset_time = (now).replace(
+    hour=7, minute=0, second=0, microsecond=0)
+
+    if(now > current_reset_time):
+        next_reset_time = (now + timedelta(days=1)).replace(
+    hour=7, minute=0, second=0, microsecond=0)
+        return next_reset_time
+    else:
+        return current_reset_time
 
 class EbayClient:
     def __init__(self):
@@ -17,6 +28,8 @@ class EbayClient:
         self._client = httpx.Client()
         self.token = None
         self.token_expires_at = None
+        self.count = 0
+        self.count_expires_at = self.next_quota_reset(datetime.now(timezone.utc))
 
     def refresh_token(self):
         now = datetime.now(timezone.utc)
@@ -61,6 +74,9 @@ class EbayClient:
 
         token = self.refresh_token()
 
+        if self.count >= CAP:
+            raise EbayError(f"API call manual cap reached.")
+
         response = self._client.get(
             "https://api.ebay.com/buy/browse/v1/item_summary/search",
             headers={
@@ -70,9 +86,20 @@ class EbayClient:
             params=params,
         )
 
+        now = datetime.now(timezone.utc)
+
+        if(now > self.count_expires_at):
+            self.count = 0
+            self.count_expires_at = self.next_quota_reset(now)
+
+        self.count += 1
+
         if response.status_code == 401 and allow_retry:
             self.token = None
             return self._request(allow_retry=False, params=params)
+        
+        elif response.status_code == 429:
+            raise EbayError(f"Rate limit reached: {response.status_code}, {response.text}")
 
         elif response.status_code != 200:
             raise EbayError(f"request failed: {response.status_code}, {response.text}")
