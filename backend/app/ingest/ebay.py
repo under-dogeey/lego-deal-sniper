@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 TOKEN_EXPIRY_MARGIN_SECONDS = 60
 FILTER_DEFAULT = "buyingOptions:{AUCTION|FIXED_PRICE|BEST_OFFER}"
+SORT_DEFAULT = "newlyListed"
 
 
 class EbayError(Exception):
@@ -45,10 +46,11 @@ class EbayClient:
 
             return self.token
         
-    def search(self, query, filter=FILTER_DEFAULT, limit=200):
+    def search(self, query, sort=SORT_DEFAULT, filter=FILTER_DEFAULT, limit=200):
     
         params = {
             "q": query,
+            "sort": sort,
             "filter": filter,
             "limit": limit,
         }
