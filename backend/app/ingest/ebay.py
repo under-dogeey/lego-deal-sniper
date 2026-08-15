@@ -1,4 +1,4 @@
-import httpx
+import httpx, logging
 from app.core.config import settings
 from datetime import datetime, timedelta, timezone
 
@@ -6,6 +6,8 @@ TOKEN_EXPIRY_MARGIN_SECONDS = 60
 FILTER_DEFAULT = "buyingOptions:{AUCTION|FIXED_PRICE|BEST_OFFER}"
 SORT_DEFAULT = "newlyListed"
 CAP = 5000
+
+logger = logging.getLogger(__name__)
 
 class EbayError(Exception):
     pass
@@ -29,7 +31,7 @@ class EbayClient:
         self.token = None
         self.token_expires_at = None
         self.count = 0
-        self.count_expires_at = self.next_quota_reset(datetime.now(timezone.utc))
+        self.count_expires_at = next_quota_reset(datetime.now(timezone.utc))
 
     def refresh_token(self):
         now = datetime.now(timezone.utc)

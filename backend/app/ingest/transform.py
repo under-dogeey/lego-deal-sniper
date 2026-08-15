@@ -54,7 +54,7 @@ def to_raw_listing(data: dict) -> RawListing:
         price = to_decimal(data.get("price", {}).get("value")),
         currency = data.get("price", {}).get("currency"),
         shipping_cost = to_decimal(shipping_cost),
-        condition = data["condition"],
+        condition = data.get("condition"),
         condition_id = data.get("conditionId"),
         buying_options = data["buyingOptions"],
         epid = data.get("epid"),

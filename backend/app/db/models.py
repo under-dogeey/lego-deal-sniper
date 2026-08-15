@@ -68,7 +68,7 @@ class RawListing(Base):
     price: Mapped[Optional[Decimal]]
     currency: Mapped[Optional[str]]
     shipping_cost: Mapped[Optional[Decimal]]
-    condition: Mapped[str]
+    condition: Mapped[Optional[str]]
     condition_id: Mapped[Optional[str]]
     buying_options: Mapped[list[str]] = mapped_column(ARRAY(String))
     epid: Mapped[Optional[str]]

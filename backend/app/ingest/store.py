@@ -1,3 +1,4 @@
+import logging
 from app.db.sessions import session_factory
 from app.db.models import RawListing, RawListingPriceHistory
 from app.ingest.transform import to_raw_listing
@@ -6,7 +7,10 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
+
 PRESERVE_ON_CONFLICT = {"id", "first_seen", "alerted_at", "ended_at", "distance_miles"}
+
+logger = logging.getLogger(__name__)
 
 def to_dict(obj):
     return {c.name: getattr(obj, c.name) for c in RawListing.__table__.columns if c.name != "id"}
@@ -71,7 +75,7 @@ def fill_raw_listings(ebay_client, query_strings):
                 
                 session.commit()
     
-    print(f"{total_new} new, {total_unchanged} unchanged, {total_changed} changed")
+    logger.info(f"{total_new} new, {total_unchanged} unchanged, {total_changed} changed")
 
 def write_history(listings, ids, observed_at, session):
 
