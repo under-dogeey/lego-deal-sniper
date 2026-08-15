@@ -58,22 +58,29 @@ def fill_raw_listings(ebay_client, query_strings):
     for queries in query_strings.values():
         for query in queries:
 
-            summaries = ebay_client.search(query).get("itemSummaries", [])
+            try:
+            
+                summaries = ebay_client.search(query).get("itemSummaries", [])
 
-            listings = [to_raw_listing(s) for s in summaries]
-                
-            if not listings:
+                listings = [to_raw_listing(s) for s in summaries]
+                    
+                if not listings:
+                    continue
+
+                with session_factory() as session:
+
+                    new, unchanged, changed = store_listings(listings, session)
+                    
+                    session.commit()
+
+                    total_new += new
+                    total_unchanged += unchanged
+                    total_changed += changed
+
+            except Exception:
+                logger.exception(f"query failed: {query}")
                 continue
 
-            with session_factory() as session:
-
-                new, unchanged, changed =  store_listings(listings, session)
-                
-                total_new += new
-                total_unchanged += unchanged
-                total_changed += changed
-                
-                session.commit()
     
     logger.info(f"{total_new} new, {total_unchanged} unchanged, {total_changed} changed")
 
