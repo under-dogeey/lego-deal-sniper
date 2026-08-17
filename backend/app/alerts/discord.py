@@ -12,8 +12,7 @@ def send(listing) -> bool:
         logger.debug("discord send failed: invalid discord web url")
         return False
     
-    content = {
-        "content": f"{listing.title} — {listing.price} — {listing.item_web_url}" }
+    content = {"content": f"{listing.title} — {listing.price} — {listing.item_web_url}" }
     
     timeout = httpx.Timeout(5.0)
     
@@ -22,5 +21,5 @@ def send(listing) -> bool:
     if response.status_code == 204:
         return True
     else:
-        logger.debug(f"discord send failed: {response.status_code} {response.text}")
+        logger.error(f"discord send failed: {response.status_code} {response.text}")
         return False

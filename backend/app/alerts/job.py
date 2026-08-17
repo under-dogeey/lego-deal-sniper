@@ -1,6 +1,6 @@
 import logging
 
-from app.alerts.discord import send
+from app.alerts import discord, ntfy
 from app.db.models import RawListing
 from sqlalchemy import select
 from datetime import datetime, timezone
@@ -16,8 +16,13 @@ def send_alerts(session, price=MAX_PRICE, cap=CAP):
 
     alert_count = 0
 
+    
+
     for listing in listings:
-        if send(listing):
+        discord_ok = discord.send(listing)
+        ntfy_ok = ntfy.send(listing)
+
+        if discord_ok or ntfy_ok:
             listing.alerted_at = datetime.now(timezone.utc)
             session.commit()
             alert_count += 1
