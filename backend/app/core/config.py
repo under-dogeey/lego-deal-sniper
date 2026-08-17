@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     ebay_client_id: str
     ebay_client_secret: str
     database_url: str
+    discord_webhook_url: str | None = None
 
 
 settings = Settings()
