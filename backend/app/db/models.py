@@ -100,3 +100,20 @@ class RawListingPriceHistory(Base):
     listing_id: Mapped[int] = mapped_column(ForeignKey("raw_listings.id"), index=True)
     price: Mapped[Optional[Decimal]]
     observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+class ScanRun(Base):
+    __tablename__ = "scan_runs"
+
+    def __repr__(self) -> str:
+        return f"ScanRun(query={self.query!r}, started_at={self.started_at!r}, listings_found={self.listings_found!r})"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source: Mapped[str]
+    query: Mapped[str]
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+    listings_found: Mapped[Optional[int]]
+    new_listings: Mapped[Optional[int]]
+    changed_listings: Mapped[Optional[int]]
+    error_type: Mapped[Optional[str]]
+    error_message: Mapped[Optional[str]]
