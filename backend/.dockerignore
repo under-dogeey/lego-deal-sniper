@@ -1,0 +1,11 @@
+# Version control systems
+.git
+.gitignore
+
+# Local dependencies & environments
+.env
+.venv/
+data/
+__pycache__/
+*.pyc
+.ruff_cache/
