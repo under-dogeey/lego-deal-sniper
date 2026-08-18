@@ -34,7 +34,7 @@ def to_raw_listing(data: dict) -> RawListing:
 
   
     deep = copy.deepcopy(data)
-    del deep["seller"]["username"]
+    deep.get("seller", {}).pop("username", None)
 
     image_urls = [data["image"].get("imageUrl")] + loop_images(data.get("additionalImages", []))
 
@@ -61,8 +61,8 @@ def to_raw_listing(data: dict) -> RawListing:
         leaf_category_id = data["leafCategoryIds"][0],
         item_web_url = data["itemWebUrl"],
         image_urls = image_urls,
-        seller_feedback_score = data["seller"].get("feedbackScore"),
-        seller_feedback_percentage = to_decimal(data["seller"].get("feedbackPercentage")),
+        seller_feedback_score = data.get("seller", {}).get("feedbackScore"),
+        seller_feedback_percentage = to_decimal(data.get("seller", {}).get("feedbackPercentage")),
         item_creation_date = to_datetime(data["itemCreationDate"]),
         item_origin_date = to_datetime(data["itemOriginDate"]),
         bid_count = data.get("bidCount"),

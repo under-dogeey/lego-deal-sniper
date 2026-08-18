@@ -2,6 +2,7 @@ import logging
 from app.db.sessions import session_factory
 from app.db.models import RawListing, RawListingPriceHistory
 from app.ingest.transform import to_raw_listing
+from app.ingest.run import start_run, finish_run, fail_run
 from datetime import datetime, timezone
 
 from sqlalchemy import select
@@ -58,13 +59,16 @@ def fill_raw_listings(ebay_client, query_strings):
     for queries in query_strings.values():
         for query in queries:
 
+            run_id = None
             try:
-            
+                run_id = start_run("ebay", query)
+
                 summaries = ebay_client.search(query).get("itemSummaries", [])
 
                 listings = [to_raw_listing(s) for s in summaries]
                     
                 if not listings:
+                    finish_run(run_id, 0, 0, 0)
                     continue
 
                 with session_factory() as session:
@@ -77,8 +81,13 @@ def fill_raw_listings(ebay_client, query_strings):
                     total_unchanged += unchanged
                     total_changed += changed
 
-            except Exception:
+                found = len(listings)
+                finish_run(run_id, found, new, changed)
+
+            except Exception as e:
                 logger.exception(f"query failed: {query}")
+                if run_id is not None:
+                    fail_run(run_id, e)
                 continue
 
     
