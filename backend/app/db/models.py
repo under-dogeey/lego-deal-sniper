@@ -2,7 +2,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import DateTime, UniqueConstraint, String, ForeignKey
+from sqlalchemy import DateTime, UniqueConstraint, String, ForeignKey, Index
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 
@@ -117,3 +117,22 @@ class ScanRun(Base):
     changed_listings: Mapped[Optional[int]]
     error_type: Mapped[Optional[str]]
     error_message: Mapped[Optional[str]]
+
+class ApiCallLog(Base):
+    __tablename__ = "api_call_log"
+
+    __table_args__ = (
+        Index(
+            "ix_api_call_log_api_count_expires_at", "api", "count_expires_at"
+        ),
+    )
+
+    def __repr__(self) -> str:
+        return f"ApiCallLog(endpoint={self.endpoint!r}, count_expires_at={self.count_expires_at!r}, called_at={self.called_at!r})"
+
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    api: Mapped[str]
+    count_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    called_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    endpoint: Mapped[str]
