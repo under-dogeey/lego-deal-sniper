@@ -2,6 +2,7 @@ from app.db.sessions import session_factory
 from app.catalog.brickset import BricksetClient
 from app.catalog.transform import to_lego_set
 from app.db.models import LegoSet
+
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 

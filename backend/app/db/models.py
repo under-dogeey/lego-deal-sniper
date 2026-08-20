@@ -130,7 +130,6 @@ class ApiCallLog(Base):
     def __repr__(self) -> str:
         return f"ApiCallLog(endpoint={self.endpoint!r}, count_expires_at={self.count_expires_at!r}, called_at={self.called_at!r})"
 
-
     id: Mapped[int] = mapped_column(primary_key=True)
     api: Mapped[str]
     count_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

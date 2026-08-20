@@ -1,11 +1,13 @@
 import httpx, logging
 from app.core.config import settings
 from datetime import datetime, timedelta, timezone
+from app.ingest.quota import log_call, calls_in_window
 
 TOKEN_EXPIRY_MARGIN_SECONDS = 60
 FILTER_DEFAULT = "buyingOptions:{AUCTION|FIXED_PRICE|BEST_OFFER}"
 SORT_DEFAULT = "newlyListed"
 CAP = 5000
+API = "buy.browse"
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +32,9 @@ class EbayClient:
         self._client = httpx.Client()
         self.token = None
         self.token_expires_at = None
-        self.count = 0
         self.count_expires_at = next_quota_reset(datetime.now(timezone.utc))
+        self.count = calls_in_window(API, self.count_expires_at)
+        
 
     def refresh_token(self):
         now = datetime.now(timezone.utc)
@@ -76,8 +79,18 @@ class EbayClient:
 
         token = self.refresh_token()
 
+        now = datetime.now(timezone.utc)
+
+        if(now > self.count_expires_at):
+            self.count_expires_at = next_quota_reset(now)
+            self.count = 0
+
         if self.count >= CAP:
             raise EbayError(f"API call manual cap reached.")
+        
+        log_call(API, self.count_expires_at, now, "item_summary/search")
+
+        self.count += 1
 
         response = self._client.get(
             "https://api.ebay.com/buy/browse/v1/item_summary/search",
@@ -87,14 +100,6 @@ class EbayClient:
             },
             params=params,
         )
-
-        now = datetime.now(timezone.utc)
-
-        if(now > self.count_expires_at):
-            self.count = 0
-            self.count_expires_at = self.next_quota_reset(now)
-
-        self.count += 1
 
         if response.status_code == 401 and allow_retry:
             self.token = None
