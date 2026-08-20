@@ -26,7 +26,12 @@ def loop_images(data):
     images = []
 
     for image in data:
-        images.append(image.get("imageUrl"))
+        imageUrl = image.get("imageUrl")
+        
+        if imageUrl is None:
+            continue
+
+        images.append(imageUrl)
     
     return images
 
@@ -36,7 +41,9 @@ def to_raw_listing(data: dict) -> RawListing:
     deep = copy.deepcopy(data)
     deep.get("seller", {}).pop("username", None)
 
-    image_urls = [data["image"].get("imageUrl")] + loop_images(data.get("additionalImages", []))
+
+    image_urls = [data.get("image", {}).get("imageUrl")] + loop_images(data.get("additionalImages", []))
+    image_urls = [image_url for image_url in image_urls if image_url is not None]
 
     options = data.get("shippingOptions", [])
 
