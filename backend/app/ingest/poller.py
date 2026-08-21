@@ -1,4 +1,4 @@
-import logging
+import logging, signal
 from app.ingest.ebay import EbayClient, CAP
 from app.ingest.store import fill_raw_listings
 from app.ingest.sweep import NEGATIVE_SIGNALS
@@ -9,6 +9,9 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
+
+def stop_scheduler(signum, frame):
+    scheduler.shutdown(wait=True)
 
 def alert_cycle():
     with session_factory() as session:
@@ -33,8 +36,10 @@ if __name__ == "__main__":
     scheduler.add_job(cycle, 'interval', minutes=15, next_run_time=datetime.now(), args=[client])
     scheduler.add_job(alert_cycle, 'interval', minutes=15, next_run_time=datetime.now() + timedelta(minutes=1))
 
+    signal.signal(signal.SIGTERM, stop_scheduler)
+
     try:
         scheduler.start()
 
-    finally:
+    finally:      
         client.close()
