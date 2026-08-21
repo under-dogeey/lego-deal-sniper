@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     database_url: str
     discord_webhook_url: str | None = None
     ntfy_topic: str | None = None
+    health_checks_url: str | None = None
 
 
 settings = Settings()

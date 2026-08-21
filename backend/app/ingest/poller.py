@@ -1,4 +1,5 @@
-import logging, signal
+import logging, signal, httpx
+from app.core.config import settings
 from app.ingest.ebay import EbayClient, CAP
 from app.ingest.store import fill_raw_listings
 from app.ingest.sweep import NEGATIVE_SIGNALS
@@ -24,6 +25,19 @@ def cycle(client):
         return
 
     fill_raw_listings(client, NEGATIVE_SIGNALS)
+
+    health_checks_url = settings.health_checks_url
+
+    if not health_checks_url:
+        logger.debug("health check ping failed: invalid health checks url")
+        return
+    
+    try:
+        response = httpx.get(health_checks_url)
+        response.raise_for_status()
+
+    except Exception:
+        logger.warning("health check ping failed")
 
 if __name__ == "__main__":
 
