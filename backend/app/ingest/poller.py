@@ -4,6 +4,7 @@ from app.ingest.ebay import EbayClient, CAP
 from app.ingest.store import fill_raw_listings
 from app.ingest.sweep import NEGATIVE_SIGNALS
 from app.alerts.job import send_alerts
+from app.alerts.health import alert_stale_queries
 from app.db.sessions import session_factory
 from apscheduler.schedulers.blocking import BlockingScheduler
 
@@ -49,6 +50,7 @@ if __name__ == "__main__":
     scheduler = BlockingScheduler()
     scheduler.add_job(cycle, 'interval', minutes=15, next_run_time=datetime.now(), args=[client])
     scheduler.add_job(alert_cycle, 'interval', minutes=15, next_run_time=datetime.now() + timedelta(minutes=1))
+    scheduler.add_job(alert_stale_queries, 'cron', hour=19, minute=0)
 
     signal.signal(signal.SIGTERM, stop_scheduler)
 

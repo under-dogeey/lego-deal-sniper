@@ -16,8 +16,6 @@ def send_alerts(session, price=MAX_PRICE, cap=CAP):
 
     alert_count = 0
 
-    
-
     for listing in listings:
         discord_ok = discord.send(listing)
         ntfy_ok = ntfy.send(listing)
