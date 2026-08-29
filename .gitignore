@@ -9,3 +9,4 @@ Thumbs.db
 data/
 *.sql
 *.dump
+backend/tests/fixtures/skeletons.jsonl

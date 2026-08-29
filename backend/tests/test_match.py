@@ -54,9 +54,6 @@ def test_scoreboard():
         if result.outcome in CLAIMS and result.outcome != label and result.confidence >= 0.9:
                 dangerous += 1
 
-        
-
-
     coverage = (correct_claim_outcome_count / claim_outcome_count) * 100
 
     print(f"coverage: {coverage:.2f}%")
