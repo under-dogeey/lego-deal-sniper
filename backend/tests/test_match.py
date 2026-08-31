@@ -19,7 +19,17 @@ FAKE_CATALOG = {
 
      "31058": [{'set_id': 26425, 'name': 'Mighty Dinosaurs', 'theme': 'Creator', 'year': 2017, 'match_string': "mighty dinosaurs creator"}],
 
-     "71700": [{'set_id': 29426, 'name': 'Jungle Raider', 'theme': 'Ninjago', 'year': 2020, 'match_string': "jungle raider ninjago"}]
+     "71700": [{'set_id': 29426, 'name': 'Jungle Raider', 'theme': 'Ninjago', 'year': 2020, 'match_string': "jungle raider ninjago"}],
+
+     "75257": [{'set_id': 29357, 'name': 'Millennium Falcon', 'theme': 'Star Wars', 'year': 2019, 'match_string': "millennium falcon star wars"}],
+
+     "60110": [{'set_id': 24912, 'name': 'Fire Station', 'theme': 'City', 'year': 2016, 'match_string': "fire station city"}],
+
+     "60320": [{'set_id': 31906, 'name': 'Fire Station', 'theme': 'City', 'year': 2022, 'match_string': "fire station city"}],
+
+     "4562": [{'set_id': 2209, 'name': 'Creator Box', 'theme': 'Creator', 'year': 2004, 'match_string': "creator box creator"}],
+
+     "70755": [{'set_id': 23875, 'name': 'Jungle Raider', 'theme': 'Ninjago', 'year': 2015, 'match_string': "jungle raider ninjago"}],
 }
 FAKE_POOL = [record for records in FAKE_CATALOG.values() for record in records]
 
@@ -37,7 +47,7 @@ def load_fixtures():
 
 @pytest.mark.parametrize("case", load_fixtures())
 def test_fixture(case):
-    result = match(case["title"], case["description_snippet"], case["structured_fields"], FAKE_CATALOG)
+    result = match(case["title"], case["description_snippet"], case["structured_fields"], FAKE_CATALOG, FAKE_POOL)
 
     if result.outcome in CLAIMS:
             assert result.outcome == Outcome(case["expected"]["outcome"])
@@ -55,7 +65,7 @@ def test_scoreboard():
 
     for fixture in fixtures:
 
-        result = match(fixture["title"], fixture["description_snippet"], fixture["structured_fields"], FAKE_CATALOG)
+        result = match(fixture["title"], fixture["description_snippet"], fixture["structured_fields"], FAKE_CATALOG, FAKE_POOL)
         label = Outcome(fixture["expected"]["outcome"])
 
         if label in CLAIMS:

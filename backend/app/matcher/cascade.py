@@ -1,14 +1,22 @@
 from app.matcher.contract import Outcome, Method, MatchResult
 from app.matcher.extract import extract_set_numbers
-from rapidfuzz import fuzz
+from rapidfuzz import fuzz, process
+
+ALIASES = {
+    "millenium": "millennium",
+    "tecnic": "technic",
+    "harry poter": "harry potter",
+    "milennium": "millennium",
+}
 
 def corroborated(title, record, number) -> bool:
     return fuzz.token_set_ratio(title, record["name"].lower()) >= 60 or record["theme"].lower() in title or len(number) >= 5
 
-def match(title, description=None, structured_fields=None, catalog=None) -> MatchResult:
+def match(title, description=None, structured_fields=None, catalog=None, pool=None) -> MatchResult:
 
     outcome = Outcome.NOT_LEGO
     set_ids = []
+    alternatives = []
     method = None
     confidence = 0.0
     signals = {}
@@ -71,6 +79,45 @@ def match(title, description=None, structured_fields=None, catalog=None) -> Matc
         outcome = Outcome.IDENTIFIED
         set_ids = [best_record["set_id"]]
 
-    result = MatchResult(outcome=outcome, set_ids=set_ids, alternatives=[], method=method, confidence=confidence, signals=signals)
+    elif pool:
+        fuzzy_title = title
+        for wrong, right in ALIASES.items():
+            fuzzy_title = fuzzy_title.replace(wrong, right)
+
+        choices = [r["match_string"] for r in pool]
+
+        results = process.extract(fuzzy_title, choices, scorer=fuzz.token_set_ratio, limit=10)
+        top_score = results[0][1]
+        leaders = [r for r in results if r[1] == top_score]
+
+        if len(leaders) == 1:
+            if top_score >= 75 and top_score - results[1][1] >= 5:
+                best_index = leaders[0][2]
+                winner = pool[best_index]
+
+                outcome = Outcome.IDENTIFIED
+                set_ids = [winner["set_id"]]
+                method = Method.FUZZY_NAME
+                confidence = 0.8
+                
+        elif len(leaders) > 1:
+            judged = sorted(leaders, key=lambda r: fuzz.token_sort_ratio(fuzzy_title, r[0]), reverse=True)
+            best_sort = fuzz.token_sort_ratio(fuzzy_title, judged[0][0])
+            second_sort = fuzz.token_sort_ratio(fuzzy_title, judged[1][0])
+
+            if best_sort - second_sort >= 10:
+                winner = pool[judged[0][2]]
+
+                outcome = Outcome.IDENTIFIED
+                set_ids = [winner["set_id"]]
+                method = Method.FUZZY_NAME
+                confidence = 0.8
+
+            else:
+                for r in leaders:
+                    alternatives.append((pool[r[2]]["set_id"], r[1]))
+
+
+    result = MatchResult(outcome=outcome, set_ids=set_ids, alternatives=alternatives, method=method, confidence=confidence, signals=signals)
 
     return result
