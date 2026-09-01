@@ -135,3 +135,19 @@ class ApiCallLog(Base):
     count_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     called_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     endpoint: Mapped[str]
+
+class ListingMatch(Base):
+    __tablename__ = "match_results"
+
+    def __repr__(self) -> str:
+        return f"ListingMatch(listing_id={self.listing_id!r}, matched_at={self.matched_at!r})"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    listing_id: Mapped[int] = mapped_column(ForeignKey("raw_listings.id"), unique=True)
+    outcome: Mapped[str]
+    method: Mapped[Optional[str]]
+    confidence: Mapped[float]
+    set_ids: Mapped[list[int]] = mapped_column(JSONB)
+    alternatives: Mapped[list[list]] = mapped_column(JSONB)
+    signals: Mapped[dict] = mapped_column(JSONB)
+    matched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
