@@ -30,6 +30,18 @@ FAKE_CATALOG = {
      "4562": [{'set_id': 2209, 'name': 'Creator Box', 'theme': 'Creator', 'year': 2004, 'match_string': "creator box creator"}],
 
      "70755": [{'set_id': 23875, 'name': 'Jungle Raider', 'theme': 'Ninjago', 'year': 2015, 'match_string': "jungle raider ninjago"}],
+
+     "HPSDCC1": [{'set_id': 9510, 'name': 'Harry Potter Minifigure', 'theme': 'Harry Potter', 'year': 2011, 'match_string': "harry potter minifigure harry potter"}],
+
+     "40342": [{'set_id': 29305, 'name': 'NINJAGO Minifigure Set', 'theme': 'Ninjago', 'year': 2019, 'match_string': "ninjago minifigure set ninjago"}],
+
+     "5008076": [{'set_id': 48655, 'name': 'LEGO Marvel Taxi', 'theme': 'Marvel Super Heroes', 'year': 2023, 'match_string': "lego marvel taxi marvel super heroes"}],
+
+     "6527192": [{'set_id': 50397, 'name': 'Yoshi', 'theme': 'Super Mario', 'year': 2024, 'match_string': "yoshi super mario"}],
+
+     "5002930": [{'set_id': 24993, 'name': 'Hair Accessories', 'theme': 'Friends', 'year': 2015, 'match_string': "hair accessories friends"}],
+
+     "71735": [{'set_id': 30780, 'name': 'Tournament of Elements', 'theme': 'Ninjago', 'year': 2021, 'match_string': "tournament of elements ninjago"}],
 }
 FAKE_POOL = [record for records in FAKE_CATALOG.values() for record in records]
 

@@ -2,12 +2,15 @@ from app.matcher.contract import Outcome, Method, MatchResult
 from app.matcher.extract import extract_set_numbers
 from rapidfuzz import fuzz, process
 
+import re
+
 ALIASES = {
     "millenium": "millennium",
     "tecnic": "technic",
     "harry poter": "harry potter",
     "milennium": "millennium",
 }
+LOT_PATTERN = re.compile(r"\blot\b")
 
 def corroborated(title, record, number) -> bool:
     return fuzz.token_set_ratio(title, record["name"].lower()) >= 60 or record["theme"].lower() in title or len(number) >= 5
@@ -81,17 +84,18 @@ def match(title, description=None, structured_fields=None, catalog=None, pool=No
 
     elif pool:
         fuzzy_title = title
+        lot_blocked = LOT_PATTERN.search(title)
+
         for wrong, right in ALIASES.items():
             fuzzy_title = fuzzy_title.replace(wrong, right)
 
         choices = [r["match_string"] for r in pool]
-
         results = process.extract(fuzzy_title, choices, scorer=fuzz.token_set_ratio, limit=10)
         top_score = results[0][1]
         leaders = [r for r in results if r[1] == top_score]
 
         if len(leaders) == 1:
-            if top_score >= 75 and top_score - results[1][1] >= 5:
+            if top_score >= 75 and top_score - results[1][1] >= 5 and not lot_blocked and fuzz.token_sort_ratio(fuzzy_title, leaders[0][0]) >= 70:
                 best_index = leaders[0][2]
                 winner = pool[best_index]
 
@@ -99,13 +103,17 @@ def match(title, description=None, structured_fields=None, catalog=None, pool=No
                 set_ids = [winner["set_id"]]
                 method = Method.FUZZY_NAME
                 confidence = 0.8
+            
+            else:
+                for r in leaders:
+                    alternatives.append((pool[r[2]]["set_id"], r[1]))
                 
         elif len(leaders) > 1:
             judged = sorted(leaders, key=lambda r: fuzz.token_sort_ratio(fuzzy_title, r[0]), reverse=True)
             best_sort = fuzz.token_sort_ratio(fuzzy_title, judged[0][0])
             second_sort = fuzz.token_sort_ratio(fuzzy_title, judged[1][0])
 
-            if best_sort - second_sort >= 10:
+            if best_sort - second_sort >= 10 and best_sort >= 70 and not lot_blocked:
                 winner = pool[judged[0][2]]
 
                 outcome = Outcome.IDENTIFIED

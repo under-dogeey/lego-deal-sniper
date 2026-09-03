@@ -25,7 +25,6 @@ def backfill_matches(session):
 
 def upsert_match(row, session):
 
-
     values = {c.name: getattr(row, c.name) for c in ListingMatch.__table__.columns if c.name != "id"}
     stmt = insert(ListingMatch).values(values)
     upsert_stmt = stmt.on_conflict_do_update(index_elements=["listing_id"], set_=
