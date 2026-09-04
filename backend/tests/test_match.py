@@ -42,6 +42,8 @@ FAKE_CATALOG = {
      "5002930": [{'set_id': 24993, 'name': 'Hair Accessories', 'theme': 'Friends', 'year': 2015, 'match_string': "hair accessories friends"}],
 
      "71735": [{'set_id': 30780, 'name': 'Tournament of Elements', 'theme': 'Ninjago', 'year': 2021, 'match_string': "tournament of elements ninjago"}],
+
+     "4096": [{'set_id': 1942, 'name': 'Micro Wheels', 'theme': 'Creator', 'year': 2003, 'match_string': "micro wheels creator"}],
 }
 FAKE_POOL = [record for records in FAKE_CATALOG.values() for record in records]
 
@@ -73,6 +75,12 @@ def test_scoreboard():
     right_identified = 0
     identified_claims = 0
 
+    unidentified_labels = 0
+    captured = 0
+
+    unidentified_tags = 0
+    clean = 0
+
     dangerous = 0
 
     for fixture in fixtures:
@@ -82,6 +90,7 @@ def test_scoreboard():
 
         if label in CLAIMS:
             claim_outcome_count += 1
+
             if result.outcome == label:
                 correct_claim_outcome_count += 1
             
@@ -93,6 +102,18 @@ def test_scoreboard():
 
         if result.outcome in CLAIMS and result.outcome != label and result.confidence >= 0.9:
                 dangerous += 1
+
+        if label == Outcome.LEGO_UNIDENTIFIED:
+             unidentified_labels += 1
+
+             if result.outcome == label:
+                  captured += 1
+        
+        if result.outcome == Outcome.LEGO_UNIDENTIFIED:
+             unidentified_tags += 1
+
+             if result.outcome == label:
+                  clean += 1
 
     coverage = (correct_claim_outcome_count / claim_outcome_count) * 100
 
@@ -106,5 +127,16 @@ def test_scoreboard():
     else:
         print("no claims yet")
 
-    assert dangerous == 0
+    if unidentified_labels > 0:
+        print(f"queue recall: {captured}/{unidentified_labels}")
+    
+    else:
+        print("no labels yet")
 
+    if unidentified_tags > 0:
+        print(f"purity: {clean}/{unidentified_tags}")
+    
+    else:
+        print("no tags yet")
+
+    assert dangerous == 0

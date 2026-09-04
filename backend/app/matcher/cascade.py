@@ -30,6 +30,7 @@ def match(title, description=None, structured_fields=None, catalog=None, pool=No
 
     
     title = title.lower()
+
     structured_fields = structured_fields or {}
     catalog = catalog or {}
     valid = [n for n in candidates if n in catalog]
@@ -48,6 +49,12 @@ def match(title, description=None, structured_fields=None, catalog=None, pool=No
         confidence = 0.9
         method = Method.STRUCTURED_FIELD
         signals["category"] = "171135"
+
+    elif category == "263015":
+        outcome = Outcome.NOT_LEGO
+        confidence = 0.9
+        method = Method.STRUCTURED_FIELD
+        signals["category"] = "263015"
 
     elif any(kw in title for kw in ("mega bloks", "mega blocks"))  and category in ("258040", "258041"):
         outcome = Outcome.NOT_LEGO
@@ -125,6 +132,10 @@ def match(title, description=None, structured_fields=None, catalog=None, pool=No
                 for r in leaders:
                     alternatives.append((pool[r[2]]["set_id"], r[1]))
 
+    if method is None and "lego" in title:
+        outcome = Outcome.LEGO_UNIDENTIFIED
+        confidence = 0.3
+        signals["keyword"] = "lego"
 
     result = MatchResult(outcome=outcome, set_ids=set_ids, alternatives=alternatives, method=method, confidence=confidence, signals=signals)
 
