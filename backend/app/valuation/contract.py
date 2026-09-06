@@ -31,9 +31,12 @@ class ValueEstimate:
         if (self.source == "comps") != (self.n is not None):
                 raise ValueError("source must be comps; n must be present")
         
-def to_bucket(condition, title) -> ConditionBucket:
+def to_bucket(condition, title, name=None) -> ConditionBucket:
 
     title = title.lower()
+
+    if name:
+        title = title.replace(name.lower(), "")
 
     for bucket, words in CUES:
         if any(word in title for word in words):

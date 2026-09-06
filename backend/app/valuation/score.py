@@ -6,6 +6,7 @@ DEAL_THRESHOLD = 0.8
 @dataclass(frozen=True)
 class Deal:
 
+    number: str
     set_id: int
     listing_id: int
     bucket: ConditionBucket
@@ -33,7 +34,10 @@ class Deal:
         if self.landed_cost <= 0:
              raise ValueError("landed cost cannot be 0 or negative")
         
-def score(listing_id, price, url, name, landed, value, threshold=DEAL_THRESHOLD) -> Deal | None: 
+def format_deal(deal) -> str:
+     return f"{deal.number} {deal.name} · {deal.bucket.name} · ${deal.landed_cost:.0f} landed vs low ${deal.low:.0f} "f"(est ${deal.estimate:.0f}, {deal.source} n={deal.n}) · {deal.ratio:.0%} · {deal.url}"
+        
+def score(listing_id, price, url, name, number, landed, value, threshold=DEAL_THRESHOLD) -> Deal | None: 
      
      if value is None or landed is None:
           return None
@@ -44,6 +48,7 @@ def score(listing_id, price, url, name, landed, value, threshold=DEAL_THRESHOLD)
           return None
      
      return Deal(
+        number = number,
         set_id = value.set_id, 
         listing_id = listing_id, 
         bucket = value.bucket,

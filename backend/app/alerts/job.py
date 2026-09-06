@@ -3,39 +3,30 @@ import logging
 from app.alerts import discord, ntfy
 from app.db.models import RawListing, ListingMatch
 from app.matcher.contract import Outcome
-from sqlalchemy import select
-from datetime import datetime, timezone
+from app.valuation.deals import find_deals
+from app.valuation.score import format_deal
+from app.valuation.transform import to_deal_row
+from datetime import date, datetime, timezone
 
-MAX_PRICE = 25
 CAP = 5
 
 logger = logging.getLogger(__name__)
 
-def send_alerts(session, price=MAX_PRICE, cap=CAP):
+def send_alerts(session, cap=CAP):
 
-    stmt = (
-        select(RawListing)
-        .join(ListingMatch)
-        .where(RawListing.price < price)
-        .where(RawListing.alerted_at.is_ (None))
-        .where(RawListing.raw_json["itemGroupType"].astext.is_ (None))
-        .where(ListingMatch.outcome != Outcome.NOT_LEGO.value)
-        .where(ListingMatch.confidence >= 0.8)
-        .limit(cap)
-    )
-
-    listings = session.scalars(stmt).all()
-
+    deals = find_deals(session, date.today())[:cap]
     alert_count = 0
 
-    for listing in listings:
-        discord_ok = discord.send(listing)
-        ntfy_ok = ntfy.send(listing)
+    for deal in deals:
+        text = format_deal(deal)
+        discord_ok = discord.send_message(text)
+        ntfy_ok = ntfy.send_message(text, click_url=deal.url)
 
         if discord_ok or ntfy_ok:
-            listing.alerted_at = datetime.now(timezone.utc)
+            now = datetime.now(timezone.utc)
+            session.add(to_deal_row(deal, now))
+            session.get(RawListing, deal.listing_id).alerted_at = now
             session.commit()
             alert_count += 1
-        
+
     logger.info(f"{alert_count} alerts sent")
-        

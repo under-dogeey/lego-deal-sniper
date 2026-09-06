@@ -31,7 +31,7 @@ def landed_cost(listing, record) -> float | None:
 
     return price
 
-def load_comps(session, set_id, bucket) -> list[float]:
+def load_comps(session, set_id, bucket, exclude_listing_id=None) -> list[float]:
 
     comps = []
     
@@ -49,7 +49,9 @@ def load_comps(session, set_id, bucket) -> list[float]:
     record = load_set_record(session, set_id)
 
     for listing in listings:
-        if bucket == to_bucket(listing.condition, listing.title):
+        if listing.id == exclude_listing_id:
+            continue
+        if bucket == to_bucket(listing.condition, listing.title, record["name"]):
             cost = landed_cost(listing, record)
             if cost is not None:
                 comps.append(cost) 

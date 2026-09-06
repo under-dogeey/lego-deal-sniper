@@ -75,18 +75,31 @@ def test_score_returns_deal_under_threshold():
     assert deal.ratio == pytest.approx(211 / 274)
     assert deal.low == 274.0 and deal.n == 21 and deal.source == "comps"
 
+def test_score_returns_deal_under_threshold():
+    deal = score(listing_id=1, price=180.0, url="u", name="Lockwood Estate", number="75930", landed=211.0, value=VALUE)
+    assert isinstance(deal, Deal)
+    assert deal.ratio == pytest.approx(211 / 274)
+    assert deal.low == 274.0 and deal.n == 21 and deal.source == "comps"
+
 def test_score_returns_none_above_threshold():
-    assert score(1, 250.0, "u", "x", landed=260.0, value=VALUE) is None
+    assert score(1, 250.0, "u", "x", "75930", landed=260.0, value=VALUE) is None
 
 def test_score_none_without_estimate():
-    assert score(1, 180.0, "u", "x", landed=211.0, value=None) is None
+    assert score(1, 180.0, "u", "x", "75930", landed=211.0, value=None) is None
 
 def test_score_none_without_landed_cost():
-    assert score(1, 180.0, "u", "x", landed=None, value=VALUE) is None
+    assert score(1, 180.0, "u", "x", "75930", landed=None, value=VALUE) is None
 
 def test_score_threshold_is_adjustable():
-    assert score(1, 250.0, "u", "x", landed=260.0, value=VALUE, threshold=1.0) is not None
+    assert score(1, 250.0, "u", "x", "75930", landed=260.0, value=VALUE, threshold=1.0) is not None
 
 def test_deal_rejects_zero_landed_cost():
     with pytest.raises(ValueError):
-        Deal(27444, 1, ConditionBucket.NEW_SEALED, 0.0, 0.0, 274.0, 327.0, 21, "comps", "x", "u")
+        Deal(number="75930", set_id=27444, listing_id=1, bucket=ConditionBucket.NEW_SEALED,
+             price=0.0, landed_cost=0.0, low=274.0, estimate=327.0, n=21, source="comps", name="x", url="u")
+        
+def test_to_bucket_ignores_set_name_cue_words():
+    title = "Lego Hero Factory Bulk and Vapour 7179 Complete No Box No Instructions"
+    assert to_bucket("Used", title, name="Bulk and Vapour") == ConditionBucket.USED_NO_BOX
+    assert to_bucket("Used", title) == ConditionBucket.PARTS_ONLY 
+
