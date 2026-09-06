@@ -2,10 +2,12 @@ from datetime import date
 import pytest
 from app.valuation.contract import ConditionBucket, ValueEstimate, to_bucket
 from app.valuation.estimate import estimate, in_production, RETAIL_FRACTIONS
+from app.valuation.score import Deal, score, DEAL_THRESHOLD
 
 TODAY = date(2026, 9, 4)
 CURRENT = {"set_id": 1, "retail_price_us": 100, "launch_date": date(2025, 1, 1), "exit_date": None, "year": 2025}
 RETIRED = {"set_id": 2, "retail_price_us": 50, "launch_date": date(2015, 1, 1), "exit_date": date(2017, 1, 1), "year": 2015}
+VALUE = ValueEstimate(27444, ConditionBucket.NEW_SEALED, 327.0, 274.0, 435.0, "comps", 21, TODAY)
 
 @pytest.mark.parametrize("condition, title, expected", [
     ("New","Open box sealed bags", ConditionBucket.NEW_OPEN_BOX),
@@ -66,3 +68,25 @@ def test_retail_fractions_are_well_formed():
     for bucket, row in RETAIL_FRACTIONS.items():
         assert len(row) == 3, bucket
         assert 0 < row[0] < row[1] < row[2], bucket
+
+def test_score_returns_deal_under_threshold():
+    deal = score(listing_id=1, price=180.0, url="u", name="Lockwood Estate", landed=211.0, value=VALUE)
+    assert isinstance(deal, Deal)
+    assert deal.ratio == pytest.approx(211 / 274)
+    assert deal.low == 274.0 and deal.n == 21 and deal.source == "comps"
+
+def test_score_returns_none_above_threshold():
+    assert score(1, 250.0, "u", "x", landed=260.0, value=VALUE) is None
+
+def test_score_none_without_estimate():
+    assert score(1, 180.0, "u", "x", landed=211.0, value=None) is None
+
+def test_score_none_without_landed_cost():
+    assert score(1, 180.0, "u", "x", landed=None, value=VALUE) is None
+
+def test_score_threshold_is_adjustable():
+    assert score(1, 250.0, "u", "x", landed=260.0, value=VALUE, threshold=1.0) is not None
+
+def test_deal_rejects_zero_landed_cost():
+    with pytest.raises(ValueError):
+        Deal(27444, 1, ConditionBucket.NEW_SEALED, 0.0, 0.0, 274.0, 327.0, 21, "comps", "x", "u")
