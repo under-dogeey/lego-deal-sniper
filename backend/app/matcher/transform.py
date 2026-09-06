@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 
 def to_listing_match(result, listing_id) -> ListingMatch:
 
-    
     return ListingMatch(
         listing_id = listing_id,
         outcome = result.outcome.value,

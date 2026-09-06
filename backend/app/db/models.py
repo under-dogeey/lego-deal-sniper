@@ -151,3 +151,21 @@ class ListingMatch(Base):
     alternatives: Mapped[list[list]] = mapped_column(JSONB)
     signals: Mapped[dict] = mapped_column(JSONB)
     matched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+class ScoredDeal(Base):
+    __tablename__ = "deals"
+
+    def __repr__(self) -> str:
+        return f"ScoredDeal(listing_id={self.listing_id!r}, alerted_at={self.alerted_at!r})"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    listing_id: Mapped[int] = mapped_column(ForeignKey("raw_listings.id"), index=True)
+    set_id: Mapped[int] = mapped_column(ForeignKey("lego_sets.set_id"), index=True)
+    bucket: Mapped[str]
+    price: Mapped[float]
+    landed_cost: Mapped[float]
+    low: Mapped[float]
+    estimate: Mapped[float]
+    source: Mapped[str]
+    n: Mapped[Optional[int]]
+    alerted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

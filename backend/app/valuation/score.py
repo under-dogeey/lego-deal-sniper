@@ -6,10 +6,6 @@ DEAL_THRESHOLD = 0.8
 @dataclass(frozen=True)
 class Deal:
 
-    @property
-    def ratio(self) -> float:
-        return self.landed_cost / self.low
-
     set_id: int
     listing_id: int
     bucket: ConditionBucket
@@ -21,6 +17,10 @@ class Deal:
     source: str
     name: str
     url: str
+
+    @property
+    def ratio(self) -> float:
+        return self.landed_cost / self.low
 
     def __post_init__(self):
 
