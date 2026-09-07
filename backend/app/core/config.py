@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     discord_webhook_url: str | None = None
     ntfy_topic: str | None = None
     health_checks_url: str | None = None
+    pricecharting_token: str | None = None
 
 
 settings = Settings()
