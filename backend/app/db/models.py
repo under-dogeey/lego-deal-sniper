@@ -169,3 +169,24 @@ class ScoredDeal(Base):
     source: Mapped[str]
     n: Mapped[Optional[int]]
     alerted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+class ValueSample(Base):
+    __tablename__ = "value_estimates"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "set_id", "bucket", "source", "sampled_at", name="uq_value_estimates_set_id_bucket_source_sampled_at"
+        ),
+    )
+
+    def __repr__(self) -> str:
+        return f"ValueSample(set_id={self.set_id!r}, sampled_at={self.sampled_at!r})"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    set_id: Mapped[int] = mapped_column(ForeignKey("lego_sets.set_id"))
+    bucket: Mapped[str]
+    source: Mapped[str]
+    price: Mapped[Decimal]
+    sales_volume: Mapped[Optional[int]]
+    pc_id: Mapped[Optional[int]]
+    sampled_at: Mapped[date]
