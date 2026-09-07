@@ -4,13 +4,6 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-def send(listing) -> bool:
-    
-    content = f"{listing.title} — {listing.price} — {listing.item_web_url}"
-
-    return send_message(content)
-    
-
 def send_message(text):
 
     discord_web_url = settings.discord_webhook_url

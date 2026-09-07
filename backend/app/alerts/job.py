@@ -1,8 +1,7 @@
 import logging
 
 from app.alerts import discord, ntfy
-from app.db.models import RawListing, ListingMatch
-from app.matcher.contract import Outcome
+from app.db.models import RawListing
 from app.valuation.deals import find_deals
 from app.valuation.score import format_deal
 from app.valuation.transform import to_deal_row
