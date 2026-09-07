@@ -1,5 +1,4 @@
-import httpx, logging, json
-from pathlib import Path
+import httpx, logging
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
