@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from app.valuation.contract import ConditionBucket
 
 DEAL_THRESHOLD = 0.8

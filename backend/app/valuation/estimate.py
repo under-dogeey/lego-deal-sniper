@@ -1,6 +1,7 @@
 import statistics
 from datetime import date
-from app.valuation.contract import ValueEstimate, ConditionBucket
+
+from app.valuation.contract import ConditionBucket, ValueEstimate
 
 RETAIL_FRACTIONS = {
     ConditionBucket.NEW_SEALED: (0.85, 0.95, 1.05),

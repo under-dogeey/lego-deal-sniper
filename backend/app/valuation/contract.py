@@ -1,6 +1,7 @@
-from enum import Enum
 from dataclasses import dataclass
 from datetime import date
+from enum import Enum
+
 
 class ConditionBucket(Enum):
     PARTS_ONLY = "parts_only"

@@ -1,5 +1,6 @@
 from app.db.models import ScoredDeal
 
+
 def to_deal_row(deal, alerted_at) -> ScoredDeal:
 
     return ScoredDeal(

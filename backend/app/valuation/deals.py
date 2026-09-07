@@ -1,13 +1,13 @@
 import logging
-from app.db.models import RawListing, ListingMatch
-from app.valuation.score import Deal
-from app.valuation.catalog import load_set_record
-from app.valuation.contract import to_bucket
-from app.valuation.comps import load_comps, landed_cost
-from app.valuation.estimate import estimate
-from app.valuation.score import score, DEAL_THRESHOLD
 
 from sqlalchemy import select
+
+from app.db.models import ListingMatch, RawListing
+from app.valuation.catalog import load_set_record
+from app.valuation.comps import landed_cost, load_comps
+from app.valuation.contract import to_bucket
+from app.valuation.estimate import estimate
+from app.valuation.score import DEAL_THRESHOLD, Deal, score
 
 logger = logging.getLogger(__name__)
 

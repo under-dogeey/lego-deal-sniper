@@ -1,5 +1,6 @@
 from app.db.models import LegoSet
 
+
 def load_set_record(session, set_id) -> dict | None:
 
     row = session.get(LegoSet, set_id)

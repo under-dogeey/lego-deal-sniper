@@ -1,10 +1,8 @@
-from app.db.models import RawListing, ListingMatch
-from app.valuation.contract import to_bucket
-from app.valuation.catalog import load_set_record
-
 from sqlalchemy import select
 
-  
+from app.db.models import ListingMatch, RawListing
+from app.valuation.catalog import load_set_record
+from app.valuation.contract import to_bucket
 
 SALES_TAX_RATE = 0.1
 SHIPPING_BASE = 7.0
