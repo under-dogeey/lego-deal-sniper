@@ -4,6 +4,7 @@ from app.ingest.ebay import EbayClient, CAP
 from app.ingest.store import fill_raw_listings
 from app.ingest.sweep import NEGATIVE_SIGNALS
 from app.matcher.store import match_new_listings
+from app.valuation.pricecharting import pricecharting_cycle
 from app.alerts.job import send_alerts
 from app.alerts.health import alert_stale_queries
 from app.db.sessions import session_factory
@@ -58,6 +59,7 @@ if __name__ == "__main__":
     scheduler.add_job(alert_cycle, 'interval', minutes=15, next_run_time=datetime.now() + timedelta(minutes=2))
     scheduler.add_job(alert_stale_queries, 'cron', hour=19, minute=0)
     scheduler.add_job(match_cycle, 'interval', minutes=15, next_run_time=datetime.now() + timedelta(minutes=1))
+    scheduler.add_job(pricecharting_cycle, 'cron', hour="10",timezone="America/Los_Angeles")
 
     signal.signal(signal.SIGTERM, stop_scheduler)
 

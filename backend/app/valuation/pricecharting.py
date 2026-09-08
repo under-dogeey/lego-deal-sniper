@@ -1,7 +1,8 @@
 import csv
 import logging
 import re
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 from decimal import Decimal
 from pathlib import Path
 
@@ -10,6 +11,8 @@ from sqlalchemy.dialects.postgresql import insert
 
 from app.core.config import settings
 from app.db.models import ValueSample
+from app.db.sessions import session_factory
+from app.matcher.catalog import load_catalog
 from app.valuation.contract import ConditionBucket
 
 logger = logging.getLogger(__name__)
@@ -147,3 +150,20 @@ def import_csv(session, path: Path, catalog: dict) -> int:
     logger.info(f"Rows read: {len(rows)}, Not Lego: {counts["not_lego"]}, No number: {counts["no_number"]}, Unresolved: {counts["unresolved"]}, Joined: {counts["joined"]}, Samples Produced: {len(samples)}, Rows Inserted: {rows_inserted}, Match Rate: {match_rate:.1%}")
         
     return rows_inserted
+
+def pricecharting_cycle():
+
+    try:
+        today = datetime.now(ZoneInfo("America/Los_Angeles")).date()
+
+        path = download_csv(today, Path("data/pricecharting"))
+        if path is None:
+            logger.debug("no pricechartingtoken, skipping download")
+            return
+
+        with session_factory() as session:
+            catalog, _ = load_catalog(session)
+            import_csv(session, path, catalog)
+
+    except Exception:
+        logger.exception("pricecharting cycle failed")

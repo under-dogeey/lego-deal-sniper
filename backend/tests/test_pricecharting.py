@@ -1,8 +1,16 @@
-import csv, pytest
+import csv
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
-from app.valuation.pricecharting import extract_number, parse_csv, resolve_set, to_samples
+
+import pytest
+
+from app.valuation.pricecharting import (
+    extract_number,
+    parse_csv,
+    resolve_set,
+    to_samples,
+)
 
 SAMPLED_AT = date(2026, 9, 6)
 
