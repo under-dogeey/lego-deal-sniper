@@ -15,8 +15,10 @@ from app.valuation.contract import ConditionBucket
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://www.pricecharting.com"
-CSV_PATH = "/" #unverified until subscribed to pricecharting
+CSV_PATH = "/price-guide/download-custom" 
 CSV_ENCODING = "utf-8"
+CSV_CATEGORY = "lego-sets"
+
 SOURCE = "pricecharting"
 CONSOLE_PREFIX = "LEGO"
 NUMBER_PATTERN = re.compile(r"#(\S+)")
@@ -39,7 +41,7 @@ def download_csv(today, target_dir):
     file_path = target_dir / f"{today}.csv"
     url = BASE_URL + CSV_PATH
 
-    response = httpx.get(url=url, params={"t": token}, timeout=httpx.Timeout(60.0))
+    response = httpx.get(url=url, params = {"t": token, "category": CSV_CATEGORY}, timeout=httpx.Timeout(60.0))
 
     response.raise_for_status()
 
@@ -81,7 +83,7 @@ def to_samples(row: dict, set_id: int, sampled_at: date) -> list[dict]:
     
     for column, bucket in CONDITION_MAP.items():
         if row[column]:
-            samples.append({"set_id": set_id, "bucket": bucket.value, "source": SOURCE, "price": Decimal(row[column]), "sales_volume": None if row["sales-volume"] == "" else int(row["sales-volume"]), "pc_id": int(row["id"]), "sampled_at": sampled_at})
+            samples.append({"set_id": set_id, "bucket": bucket.value, "source": SOURCE, "price": Decimal(row[column].removeprefix("$")), "sales_volume": None if row["sales-volume"] == "" else int(row["sales-volume"]), "pc_id": int(row["id"]), "sampled_at": sampled_at})
 
     return samples
 
@@ -134,10 +136,10 @@ def import_csv(session, path: Path, catalog: dict) -> int:
         logger.info(f"Samples is empty; Counts: {counts}")
         return 0
 
-    stmt = insert(ValueSample).values(samples)
+    stmt = insert(ValueSample)
     upsert_stmt = stmt.on_conflict_do_nothing(constraint="uq_value_estimates_set_id_bucket_source_sampled_at").returning(ValueSample.id)
 
-    result = session.execute(upsert_stmt).all()
+    result = session.execute(upsert_stmt, samples).all()
     session.commit()
     rows_inserted = len(result)
     match_rate = counts["joined"] / (counts["joined"] + counts["no_number"] + counts["unresolved"])
