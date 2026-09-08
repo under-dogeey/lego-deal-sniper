@@ -11,7 +11,7 @@ class ConditionBucket(Enum):
     NEW_SEALED = "new_sealed"
     USED_COMPLETE = "used_complete"
     
-CUES = [(ConditionBucket.PARTS_ONLY, ["parts only", "for parts", "parts lot", "pieces only", "bricks only", "bulk"]), (ConditionBucket.INCOMPLETE, ["incomplete", "not complete", "missing", "partial", "some pieces", "as is", "as-is", "unchecked", "unverified"]), (ConditionBucket.USED_NO_BOX, ["no box", "without box", "no instructions", "loose", "built", "assembled", "displayed"]),(ConditionBucket.NEW_OPEN_BOX, ["open box", "sealed bags", "unopened bags", "bags sealed"]), (ConditionBucket.NEW_SEALED, ["sealed", "nib", "misb", "nisb", "brand new", "factory sealed", "unopened", "never opened"]),  (ConditionBucket.USED_COMPLETE, ["complete", "100%", "all pieces", "with box", "w/ box", "cib"])]
+CUES = [(ConditionBucket.PARTS_ONLY, ["parts only", "for parts", "parts lot", "pieces only", "bricks only", "bulk", "minifig", "mini fig", "minifigure", "figs"]), (ConditionBucket.INCOMPLETE, ["incomplete", "not complete", "missing", "partial", "some pieces", "as is", "as-is", "unchecked", "unverified"]), (ConditionBucket.USED_NO_BOX, ["no box", "without box", "no instructions", "loose", "built", "assembled", "displayed"]),(ConditionBucket.NEW_OPEN_BOX, ["open box", "sealed bags", "unopened bags", "bags sealed"]), (ConditionBucket.NEW_SEALED, ["sealed", "nib", "misb", "nisb", "brand new", "factory sealed", "unopened", "never opened"]),  (ConditionBucket.USED_COMPLETE, ["complete", "100%", "all pieces", "with box", "w/ box", "cib"])]
 
 @dataclass(frozen=True)
 class ValueEstimate:

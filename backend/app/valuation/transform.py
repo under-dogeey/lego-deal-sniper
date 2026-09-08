@@ -11,7 +11,6 @@ def to_deal_row(deal, alerted_at) -> ScoredDeal:
         landed_cost = deal.landed_cost,
         low = deal.low,
         estimate = deal.estimate,
-        ratio = deal.ratio,
         source = deal.source,
         n = deal.n,
         alerted_at = alerted_at

@@ -2,11 +2,12 @@ import csv
 import logging
 import re
 from datetime import date, datetime
-from zoneinfo import ZoneInfo
 from decimal import Decimal
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import httpx
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
 from app.core.config import settings
@@ -158,7 +159,7 @@ def pricecharting_cycle():
 
         path = download_csv(today, Path("data/pricecharting"))
         if path is None:
-            logger.debug("no pricechartingtoken, skipping download")
+            logger.debug("no pricecharting token, skipping download")
             return
 
         with session_factory() as session:
@@ -167,3 +168,19 @@ def pricecharting_cycle():
 
     except Exception:
         logger.exception("pricecharting cycle failed")
+
+def load_latest_sample(session, set_id: int, bucket: ConditionBucket) -> dict | None:
+
+    stmt = (
+        select(ValueSample)
+        .where(ValueSample.set_id == set_id)
+        .where(ValueSample.bucket == bucket.value)
+        .where(ValueSample.source == SOURCE).order_by(ValueSample.sampled_at.desc())
+    )
+
+    row = session.scalars(stmt).first()
+
+    if row is None:
+        return None
+    
+    return {"price": float(row.price), "sampled_at": row.sampled_at}
